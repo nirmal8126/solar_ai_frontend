@@ -1,217 +1,138 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, RefreshCcw } from "lucide-react";
-import { useRouter } from "next/navigation";
+import {
+  Users,
+  FileText,
+  Trophy,
+  TrendingUp,
+  PlusCircle,
+  ArrowRight,
+} from "lucide-react";
+import Link from "next/link";
 import { API_URL } from "@/lib/api";
 
-
-type Lead = {
-  id: number;
-  customer_name: string;
-  email: string;
-  address: string;
-  property_type: string;
-  avg_monthly_bill: number;
-  status: string;
-};
-
-export default function DashboardPage() {
-  const router = useRouter();
-
-  const [leads, setLeads] = useState<Lead[]>([]);
+export default function OverviewDashboard() {
+  const [leads, setLeads] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
 
-  const fetchLeads = () => {
-    setLoading(true);
+  // Fetch leads from backend
+  useEffect(() => {
     axios
-      .get(`${API_URL}/leads`)
+      .get(`${API_URL}/leads/`)
       .then((res) => setLeads(res.data))
       .catch(console.error)
       .finally(() => setLoading(false));
-  };
-
-  useEffect(() => {
-    fetchLeads();
   }, []);
 
-  const filteredLeads = useMemo(() => {
-  const s = search.toLowerCase().trim();
-    if (!s) return leads;
-
-    return leads.filter(
-      (lead) =>
-        lead.customer_name?.toLowerCase().includes(s) ||
-        lead.address?.toLowerCase().includes(s) ||
-        lead.property_type?.toLowerCase().includes(s)
-    );
-  }, [leads, search]);
-
-
+  // Calculate Dashboard Stats
   const totalLeads = leads.length;
-  const wonLeads = leads.filter((l) => l.status === "won").length;
-  const inProgress = leads.filter((l) => l.status === "in_progress").length;
-  const newLeads = leads.filter((l) => l.status === "new").length;
+  const wonDeals = leads.filter((l) => l.status === "won").length;
+  const proposals = leads.filter((l) => l.proposal_path).length;
+  const conversionRate =
+    totalLeads > 0 ? Math.round((wonDeals / totalLeads) * 100) : 0;
 
-  const statusColor = (status: string) => {
-    switch (status) {
-      case "won":
-        return "bg-emerald-100 text-emerald-700";
-      case "in_progress":
-        return "bg-amber-100 text-amber-700";
-      case "lost":
-        return "bg-red-100 text-red-700";
-      default:
-        return "bg-blue-100 text-blue-700";
-    }
-  };
+  const recentLeads = leads.slice(0, 5);
 
   return (
     <div className="space-y-6">
-      {/* Page title */}
+
+      {/* HEADER */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Leads Overview</h1>
-          <p className="text-gray-500 text-sm mt-1">
-            Track all your solar enquiries and their status.
-          </p>
-        </div>
-
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={fetchLeads}
-          disabled={loading}
-          className="flex items-center gap-2"
-        >
-          <RefreshCcw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
-          Refresh
-        </Button>
+        <h1 className="text-3xl font-bold">Overview</h1>
+        <Link href="/dashboard/leads/new">
+          <Button className="flex items-center gap-2">
+            <PlusCircle className="w-4 h-4" />
+            Add Lead
+          </Button>
+        </Link>
       </div>
 
-      {/* Summary cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* STATS CARDS */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+
+        {/* Total Leads */}
         <Card className="shadow-sm">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-gray-500">Total Leads</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Total Leads</CardTitle>
+            <Users className="text-blue-600" />
           </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{totalLeads}</p>
+          <CardContent className="text-3xl font-bold">
+            {loading ? "…" : totalLeads}
           </CardContent>
         </Card>
 
+        {/* Proposals */}
         <Card className="shadow-sm">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-gray-500">New Leads</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Proposals Generated</CardTitle>
+            <FileText className="text-purple-600" />
           </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{newLeads}</p>
+          <CardContent className="text-3xl font-bold">
+            {loading ? "…" : proposals}
           </CardContent>
         </Card>
 
+        {/* Won Deals */}
         <Card className="shadow-sm">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-gray-500">In Progress</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Won Deals</CardTitle>
+            <Trophy className="text-green-600" />
           </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{inProgress}</p>
+          <CardContent className="text-3xl font-bold">
+            {loading ? "…" : wonDeals}
           </CardContent>
         </Card>
 
+        {/* Conversion Rate */}
         <Card className="shadow-sm">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-gray-500">Won Deals</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Conversion Rate</CardTitle>
+            <TrendingUp className="text-orange-600" />
           </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold text-emerald-600">{wonLeads}</p>
+          <CardContent className="text-3xl font-bold">
+            {loading ? "…" : `${conversionRate}%`}
           </CardContent>
         </Card>
       </div>
 
-      {/* Search + table */}
+      {/* RECENT LEADS */}
       <Card className="shadow-sm">
-        <CardHeader className="flex flex-row items-center justify-between gap-4">
-          <CardTitle>All Leads</CardTitle>
-          <div className="flex items-center gap-2">
-            <div className="relative">
-              <Search className="w-4 h-4 text-gray-400 absolute left-2 top-2.5" />
-              <Input
-                placeholder="Search by name or city..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-8 w-64"
-              />
-            </div>
-          </div>
+        <CardHeader className="flex items-center justify-between">
+          <CardTitle>Recent Leads</CardTitle>
+          <Link href="/dashboard/leads">
+            <Button variant="outline" className="flex items-center gap-2">
+              View All
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+          </Link>
         </CardHeader>
 
         <CardContent>
           {loading ? (
-            <p className="text-gray-500 text-sm">Loading leads…</p>
-          ) : filteredLeads.length === 0 ? (
-            <p className="text-gray-500 text-sm">
-              No leads found. Try changing the search.
-            </p>
+            <p className="text-sm text-muted-foreground">Loading…</p>
+          ) : recentLeads.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No leads yet.</p>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b text-gray-500">
-                    <th className="p-3 text-left">Name</th>
-                    <th className="p-3 text-left">Property</th>
-                    <th className="p-3 text-left">Monthly Bill</th>
-                    <th className="p-3 text-left">Status</th>
-                    <th className="p-3 text-left">View</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredLeads.map((lead) => (
-                    <tr key={lead.id} className="border-b hover:bg-gray-50">
-
-                      {/* Customer Info */}
-                      <td className="p-3">
-                        <div className="font-medium">{lead.customer_name}</div>
-                        <div className="text-xs text-gray-500">{lead.email}</div>
-                      </td>
-
-                      {/* Address */}
-                      <td className="p-3 text-sm text-gray-600">
-                        {lead.address}
-                      </td>
-
-                      {/* Monthly Bill */}
-                      <td className="p-3 text-sm text-gray-800">
-                        ₹{lead.avg_monthly_bill}
-                      </td>
-
-                      {/* Status */}
-                      <td className="p-3">
-                        <span className="px-3 py-1 text-xs rounded-full bg-blue-100 text-blue-700">
-                          {lead.status}
-                        </span>
-                      </td>
-
-                      {/* Actions */}
-                      <td className="p-3 text-right">
-                        <button
-                          className="text-blue-600 hover:underline"
-                          onClick={() => router.push(`/dashboard/leads/${lead.id}`)}
-                        >
-                          View
-                        </button>
-                      </td>
-
-                    </tr>
-                  ))}
-                </tbody>
-
-              </table>
+            <div className="space-y-3">
+              {recentLeads.map((lead) => (
+                <Link
+                  key={lead.id}
+                  href={`/dashboard/leads/${lead.id}`}
+                  className="flex items-center justify-between border rounded-lg p-3 hover:bg-muted/50 transition"
+                >
+                  <div>
+                    <p className="font-medium">{lead.customer_name}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {lead.city || lead.address}
+                    </p>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-muted-foreground" />
+                </Link>
+              ))}
             </div>
           )}
         </CardContent>
