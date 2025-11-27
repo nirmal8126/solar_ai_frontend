@@ -8,6 +8,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { API_URL } from "@/lib/api";
+import { RefreshCw } from "lucide-react";
 
 import {
   ArrowLeft,
@@ -45,13 +46,13 @@ type Lead = {
 };
 
 export default function LeadDetailPage() {
-
   const { id } = useParams();
   const router = useRouter();
 
   const [lead, setLead] = useState<Lead | null>(null);
   const [loading, setLoading] = useState(true);
   const [statusUpdating, setStatusUpdating] = useState(false);
+  const [loadingProposal, setLoadingProposal] = useState(false);
 
   // Fetch Lead
   useEffect(() => {
@@ -261,13 +262,18 @@ export default function LeadDetailPage() {
               </span>
             </div>
 
-            {/* Proposal PDF */}
-            <div className="mt-4">
+            {/* PROPOSAL ACTIONS */}
+            <div className="mt-4 space-y-3">
+              <a href={`/dashboard/leads/${id}/proposal`}>
+                <button className="flex items-center gap-2 bg-gray-700 text-white px-4 py-2 rounded-lg">
+                  <FileText className="w-4 h-4" />
+                  View Proposal
+                </button>
+              </a>
+
+              {/* Download Proposal */}
               {lead.proposal_path ? (
-                <a
-                  href={`${API_URL}/leads/${id}/proposal`}
-                  target="_blank"
-                >
+                <a href={`${API_URL}/leads/${id}/proposal`} target="_blank">
                   <button className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg">
                     <Download className="w-4 h-4" />
                     Download Proposal
@@ -276,6 +282,38 @@ export default function LeadDetailPage() {
               ) : (
                 <p className="text-xs text-gray-500">Proposal generating…</p>
               )}
+
+              {/* Regenerate PDF */}
+              <button
+                onClick={async () => {
+                  setLoadingProposal(true);
+
+                  try {
+                    const res = await axios.post(
+                      `${API_URL}/leads/${id}/proposal/regenerate`
+                    );
+
+                    // update UI with new path
+                    setLead((prev: any) => ({
+                      ...prev,
+                      proposal_path: res.data.proposal_path,
+                    }));
+                  } catch (err) {
+                    console.error(err);
+                    alert("Failed to regenerate proposal");
+                  }
+
+                  setLoadingProposal(false);
+                }}
+                className="flex items-center gap-2 bg-gray-200 dark:bg-gray-700 px-4 py-2 rounded-lg"
+              >
+                {loadingProposal ? (
+                  <Loader2 className="animate-spin w-4 h-4" />
+                ) : (
+                  <RefreshCw className="w-4 h-4" />
+                )}
+                {loadingProposal ? "Regenerating..." : "Regenerate Proposal"}
+              </button>
             </div>
           </CardContent>
         </Card>
