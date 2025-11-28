@@ -5,13 +5,14 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { signIn } from "next-auth/react";
+import { Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
 import { useState } from "react";
-import { SignupSchema } from "@/lib/validators/auth";
+import { LoginSchema } from "@/lib/validators/auth";
 
-export default function RegisterPage() {
+export default function LoginPage() {
   const router = useRouter();
   const [serverError, setServerError] = useState("");
 
@@ -20,47 +21,37 @@ export default function RegisterPage() {
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm({
-    resolver: zodResolver(SignupSchema),
+    resolver: zodResolver(LoginSchema),
   });
 
   const onSubmit = async (data: any) => {
     setServerError("");
 
-    const res = await fetch("/api/register", {
-      method: "POST",
-      body: JSON.stringify(data),
+    const res: any = await signIn("credentials", {
+      redirect: false,
+      email: data.email,
+      password: data.password,
     });
 
-    const result = await res.json();
-
-    if (result.error) {
-      setServerError(result.error);
+    if (res?.error) {
+      setServerError("Invalid email or password");
       return;
     }
 
-    router.push("/login");
+    router.push("/onboarding");
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center px-6">
       <div className="w-full max-w-md bg-card border rounded-xl shadow-lg p-8 space-y-6">
-        <h1 className="text-3xl font-bold text-center">Create Your Account</h1>
+
+        <h1 className="text-3xl font-bold text-center">Welcome Back</h1>
+
         <p className="text-center text-muted-foreground">
-          Start your SunQuote AI journey 🚀
+          Log in to your SunQuote AI account
         </p>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-
-          {/* NAME */}
-          <div>
-            <label>Name</label>
-            <Input {...register("name")} />
-            {errors.name && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.name.message as string}
-              </p>
-            )}
-          </div>
 
           {/* EMAIL */}
           <div>
@@ -84,7 +75,7 @@ export default function RegisterPage() {
             )}
           </div>
 
-          {/* SERVER ERROR */}
+          {/* Server error */}
           {serverError && (
             <p className="text-red-500 text-sm text-center">{serverError}</p>
           )}
@@ -97,15 +88,15 @@ export default function RegisterPage() {
             {isSubmitting ? (
               <Loader2 className="animate-spin w-5 h-5" />
             ) : (
-              "Create Account"
+              "Login"
             )}
           </Button>
         </form>
 
         <p className="text-center text-sm">
-          Already have an account?{" "}
-          <Link href="/login" className="text-blue-600">
-            Login
+          Don’t have an account?{" "}
+          <Link href="/auth/signup" className="text-blue-600">
+            Create one
           </Link>
         </p>
       </div>

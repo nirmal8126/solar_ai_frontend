@@ -18,11 +18,11 @@ export default function LandingPage() {
 
           <div className="flex items-center gap-3">
             <ModeToggle />
-            <Link href="/login">
+            <Link href="/auth/login">
               <Button variant="ghost">Login</Button>
             </Link>
 
-            <Link href="/register">
+            <Link href="/auth/signup">
               <Button className="bg-blue-600 hover:bg-blue-700 text-white">
                 Get Started
               </Button>
@@ -43,7 +43,7 @@ export default function LandingPage() {
         </p>
 
         <div className="mt-8 flex justify-center gap-4">
-          <Link href="/register">
+          <Link href="/auth/signup">
             <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white">
               Start Free
             </Button>
