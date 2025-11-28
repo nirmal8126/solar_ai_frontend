@@ -34,7 +34,7 @@ export default function OnboardingStep1() {
 
   const onSubmit = async (data: any) => {
     localStorage.setItem("sunquote_onboard_step1", JSON.stringify(data));
-    router.push("/onboarding/branding");
+    router.push("/auth/onboarding/branding");
   };
 
   return (

@@ -26,8 +26,8 @@ export default function SolarSettingsPage() {
     const s1 = localStorage.getItem("sunquote_onboard_step1");
     const s2 = localStorage.getItem("sunquote_onboard_step2");
 
-    if (!s1) router.push("/onboarding");
-    if (!s2) router.push("/onboarding/branding");
+    if (!s1) router.push("/auth/onboarding");
+    if (!s2) router.push("/auth/onboarding/branding");
   }, []);
 
   const handleNext = () => {
@@ -45,7 +45,7 @@ export default function SolarSettingsPage() {
 
     localStorage.setItem("sunquote_onboard_step3", JSON.stringify(settingsData));
 
-    setTimeout(() => router.push("/onboarding/finish"), 500);
+    setTimeout(() => router.push("/auth/onboarding/finish"), 500);
   };
 
   return (

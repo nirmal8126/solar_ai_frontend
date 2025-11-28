@@ -20,7 +20,7 @@ export default function BrandingPage() {
   // Load step1 data to ensure user completed previous step
   useEffect(() => {
     const step1 = localStorage.getItem("sunquote_onboard_step1");
-    if (!step1) router.push("/onboarding");
+    if (!step1) router.push("/auth/onboarding");
   }, []);
 
   const handleLogoUpload = (e: any) => {
@@ -45,7 +45,7 @@ export default function BrandingPage() {
     localStorage.setItem("sunquote_onboard_step2", JSON.stringify(step2Data));
 
     setTimeout(() => {
-      router.push("/onboarding/solar-settings");
+      router.push("/auth/onboarding/solar-settings");
     }, 600);
   };
 

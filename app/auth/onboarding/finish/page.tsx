@@ -20,10 +20,10 @@ export default function FinishPage() {
     const s2 = localStorage.getItem("sunquote_onboard_step2");
     const s3 = localStorage.getItem("sunquote_onboard_step3");
 
-    if (!s1) router.push("/onboarding");
-    if (!s2) router.push("/onboarding/branding");
-    if (!s3) router.push("/onboarding/solar-settings");
-
+    if (!s1) router.push("/auth/onboarding");
+    if (!s2) router.push("/auth/onboarding/branding");
+    if (!s3) router.push("/auth/onboarding/solar-settings");
+    
     setStep1(JSON.parse(s1 || "{}"));
     setStep2(JSON.parse(s2 || "{}"));
     setStep3(JSON.parse(s3 || "{}"));
