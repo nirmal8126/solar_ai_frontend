@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { SignupSchema } from "@/lib/validators/auth";
+import { API_URL } from "@/lib/api";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -26,19 +27,22 @@ export default function RegisterPage() {
   const onSubmit = async (data: any) => {
     setServerError("");
 
-    const res = await fetch("/api/register", {
+    const response = await fetch(`${API_URL}/auth/signup`, {
       method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify(data),
     });
 
-    const result = await res.json();
+    const result = await response.json();
 
-    if (result.error) {
-      setServerError(result.error);
+    if (!response.ok) {
+      setServerError(result.detail || result.error || "Unable to create account");
       return;
     }
 
-    router.push("/login");
+    router.push("/auth/login");
   };
 
   return (

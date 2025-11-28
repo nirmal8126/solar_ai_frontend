@@ -38,7 +38,7 @@ export default function LoginPage() {
       return;
     }
 
-    router.push("/auth/onboarding");
+    router.push("/dashboard");
   };
 
   return (

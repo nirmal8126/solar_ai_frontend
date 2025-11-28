@@ -1,62 +1,73 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { supabase } from "@/lib/supabase";
-import bcrypt from "bcryptjs";
+import { API_URL } from "@/lib/api";
+
+const BACKEND_URL = API_URL || process.env.API_URL;
+
+if (!BACKEND_URL) {
+  throw new Error("NEXT_PUBLIC_API_URL or API_URL must be set for authentication");
+}
 
 const handler = NextAuth({
   session: { strategy: "jwt" },
 
   providers: [
     CredentialsProvider({
-      name: "credentials",
+      name: "Solar AI",
       credentials: {
-        email: {},
-        password: {},
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
       },
 
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
-        // Get user
-        const { data: users, error } = await supabase
-          .from("users")
-          .select("*")
-          .eq("email", credentials.email)
-          .single();
+        const response = await fetch(`${BACKEND_URL}/auth/login`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: credentials.email,
+            password: credentials.password,
+          }),
+        });
 
-        if (error || !users) return null;
+        if (!response.ok) return null;
 
-        // Check password
-        const isValid = await bcrypt.compare(
-          credentials.password,
-          users.password_hash
-        );
+        const data = await response.json();
 
-        if (!isValid) return null;
+        if (!data?.user || !data?.access_token) return null;
 
         return {
-          id: users.id,
-          email: users.email,
-          name: users.name,
+          id: data.user.id.toString(),
+          email: data.user.email,
+          name: data.user.name,
+          accessToken: data.access_token,
         };
       },
     }),
   ],
 
   pages: {
-    signIn: "/login",
+    signIn: "/auth/login",
   },
 
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
+        token.accessToken = user.accessToken;
       }
       return token;
     },
 
     async session({ session, token }) {
-      session.user.id = token.id;
+      session.user = {
+        ...session.user,
+        id: token.id,
+        accessToken: token.accessToken,
+      };
       return session;
     },
   },
